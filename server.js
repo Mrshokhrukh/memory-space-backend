@@ -68,17 +68,21 @@ app.use((req, res, next) => {
 });
 
 // Swagger UI
-app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
-  customCss: '.swagger-ui .topbar { display: none }',
-  customSiteTitle: 'Memoryscape API Documentation',
-  customfavIcon: '/favicon.ico',
-  swaggerOptions: {
-    persistAuthorization: true,
-    displayRequestDuration: true,
-    filter: true,
-    deepLinking: true
-  }
-}));
+app.use(
+  '/api-docs',
+  swaggerUi.serve,
+  swaggerUi.setup(swaggerSpecs, {
+    customCss: '.swagger-ui .topbar { display: none }',
+    customSiteTitle: 'Memoryscape API Documentation',
+    customfavIcon: '/favicon.ico',
+    swaggerOptions: {
+      persistAuthorization: true,
+      displayRequestDuration: true,
+      filter: true,
+      deepLinking: true,
+    },
+  })
+);
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -129,9 +133,9 @@ app.use(errorHandler);
 // Socket.io connection handling
 socketHandler(io);
 
-// Database connection
+// Database connection - > mongodb://localhost:27017/memoryscape
 mongoose
-  .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/memoryscape', {
+  .connect(process.env.MONGODB_URI || 'null', {
     useNewUrlParser: true,
     useUnifiedTopology: true,
   })
