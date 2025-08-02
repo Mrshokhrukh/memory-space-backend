@@ -5,6 +5,8 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { createServer } = require('http');
 const { Server } = require('socket.io');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpecs = require('./config/swagger');
 require('dotenv').config();
 
 // Import routes
@@ -65,6 +67,19 @@ app.use((req, res, next) => {
   next();
 });
 
+// Swagger UI
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpecs, {
+  customCss: '.swagger-ui .topbar { display: none }',
+  customSiteTitle: 'Memoryscape API Documentation',
+  customfavIcon: '/favicon.ico',
+  swaggerOptions: {
+    persistAuthorization: true,
+    displayRequestDuration: true,
+    filter: true,
+    deepLinking: true
+  }
+}));
+
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
@@ -72,6 +87,33 @@ app.use('/api/capsules', authenticateToken, capsuleRoutes);
 app.use('/api/memories', authenticateToken, memoryRoutes);
 app.use('/api/upload', authenticateToken, uploadRoutes);
 
+/**
+ * @swagger
+ * /api/health:
+ *   get:
+ *     summary: Health check
+ *     description: Check if the server is running and healthy
+ *     tags: [System]
+ *     responses:
+ *       200:
+ *         description: Server is healthy
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "OK"
+ *                 timestamp:
+ *                   type: string
+ *                   format: date-time
+ *                   example: "2024-01-01T12:00:00.000Z"
+ *                 uptime:
+ *                   type: number
+ *                   description: Server uptime in seconds
+ *                   example: 3600
+ */
 // Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({

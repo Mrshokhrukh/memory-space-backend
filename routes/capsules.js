@@ -7,9 +7,77 @@ const { validateCapsuleCreation, validateObjectId, validatePagination } = requir
 
 const router = express.Router()
 
-// @route   GET /api/capsules
-// @desc    Get user's capsules
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules:
+ *   get:
+ *     summary: Get user's capsules
+ *     description: Retrieve all capsules where the user is owner or contributor
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 10
+ *         description: Number of items per page
+ *     responses:
+ *       200:
+ *         description: Capsules retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsules:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Capsule'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 10
+ *                         total:
+ *                           type: integer
+ *                           example: 25
+ *                         pages:
+ *                           type: integer
+ *                           example: 3
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/", validatePagination, async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1
@@ -53,9 +121,91 @@ router.get("/", validatePagination, async (req, res) => {
   }
 })
 
-// @route   POST /api/capsules
-// @desc    Create a new capsule
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules:
+ *   post:
+ *     summary: Create a new capsule
+ *     description: Create a new memory capsule
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - type
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Capsule title
+ *                 example: "Summer 2023"
+ *               description:
+ *                 type: string
+ *                 description: Capsule description
+ *                 example: "Memories from our summer vacation"
+ *               type:
+ *                 type: string
+ *                 enum: [public, private, timed]
+ *                 description: Capsule type
+ *                 example: "public"
+ *               releaseDate:
+ *                 type: string
+ *                 format: date-time
+ *                 description: Release date for timed capsules
+ *                 example: "2024-12-31T23:59:59.000Z"
+ *               theme:
+ *                 type: string
+ *                 description: Capsule theme
+ *                 example: "default"
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Capsule tags
+ *                 example: ["summer", "vacation", "family"]
+ *     responses:
+ *       201:
+ *         description: Capsule created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Capsule created successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsule:
+ *                       $ref: '#/components/schemas/Capsule'
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/", validateCapsuleCreation, async (req, res) => {
   try {
     const { title, description, type, releaseDate, theme, tags } = req.body
@@ -106,9 +256,75 @@ router.post("/", validateCapsuleCreation, async (req, res) => {
   }
 })
 
-// @route   GET /api/capsules/:id
-// @desc    Get capsule by ID
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules/{id}:
+ *   get:
+ *     summary: Get capsule by ID
+ *     description: Retrieve a specific capsule by its ID
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Capsule ID
+ *         example: "507f1f77bcf86cd799439012"
+ *     responses:
+ *       200:
+ *         description: Capsule retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsule:
+ *                       $ref: '#/components/schemas/Capsule'
+ *                     userRole:
+ *                       type: string
+ *                       enum: [owner, admin, contributor, viewer]
+ *                       description: User's role in this capsule
+ *       400:
+ *         description: Bad request - invalid capsule ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - no access to capsule
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Capsule not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/:id", validateObjectId("id"), checkCapsulePermission("viewer"), async (req, res) => {
   try {
     const capsule = await Capsule.findById(req.params.id)
@@ -155,9 +371,109 @@ router.get("/:id", validateObjectId("id"), checkCapsulePermission("viewer"), asy
   }
 })
 
-// @route   PUT /api/capsules/:id
-// @desc    Update capsule
-// @access  Private (Admin/Owner only)
+/**
+ * @swagger
+ * /api/capsules/{id}:
+ *   put:
+ *     summary: Update capsule
+ *     description: Update a capsule (admin/owner only)
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Capsule ID
+ *         example: "507f1f77bcf86cd799439012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Capsule title
+ *                 example: "Updated Summer 2023"
+ *               description:
+ *                 type: string
+ *                 description: Capsule description
+ *                 example: "Updated memories from our summer vacation"
+ *               theme:
+ *                 type: string
+ *                 description: Capsule theme
+ *                 example: "ocean"
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Capsule tags
+ *                 example: ["summer", "vacation", "family", "beach"]
+ *               settings:
+ *                 type: object
+ *                 description: Capsule settings
+ *                 properties:
+ *                   allowPublicDiscovery:
+ *                     type: boolean
+ *                     example: true
+ *                   allowComments:
+ *                     type: boolean
+ *                     example: true
+ *     responses:
+ *       200:
+ *         description: Capsule updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Capsule updated successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsule:
+ *                       $ref: '#/components/schemas/Capsule'
+ *       400:
+ *         description: Bad request - invalid capsule ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Capsule not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.put("/:id", validateObjectId("id"), checkCapsulePermission("admin"), async (req, res) => {
   try {
     const { title, description, theme, tags, settings } = req.body
@@ -196,9 +512,81 @@ router.put("/:id", validateObjectId("id"), checkCapsulePermission("admin"), asyn
   }
 })
 
-// @route   POST /api/capsules/:id/join
-// @desc    Join capsule by invite code
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules/{id}/join:
+ *   post:
+ *     summary: Join capsule
+ *     description: Join a capsule using invite code
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Capsule ID
+ *         example: "507f1f77bcf86cd799439012"
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - inviteCode
+ *             properties:
+ *               inviteCode:
+ *                 type: string
+ *                 description: Invite code for private capsules
+ *                 example: "SUMMER2023"
+ *     responses:
+ *       200:
+ *         description: Successfully joined capsule
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully joined capsule"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsule:
+ *                       $ref: '#/components/schemas/Capsule'
+ *       400:
+ *         description: Bad request - invalid capsule ID or invite code
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Capsule not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/:id/join", validateObjectId("id"), async (req, res) => {
   try {
     const { inviteCode } = req.body
@@ -266,9 +654,63 @@ router.post("/:id/join", validateObjectId("id"), async (req, res) => {
   }
 })
 
-// @route   DELETE /api/capsules/:id/leave
-// @desc    Leave capsule
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules/{id}/leave:
+ *   delete:
+ *     summary: Leave capsule
+ *     description: Leave a capsule (cannot leave if you are the owner)
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Capsule ID
+ *         example: "507f1f77bcf86cd799439012"
+ *     responses:
+ *       200:
+ *         description: Successfully left capsule
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Successfully left capsule"
+ *       400:
+ *         description: Bad request - invalid capsule ID or owner cannot leave
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - not a capsule member
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.delete("/:id/leave", validateObjectId("id"), checkCapsulePermission("contributor"), async (req, res) => {
   try {
     const capsule = await Capsule.findById(req.params.id)
@@ -311,9 +753,82 @@ router.delete("/:id/leave", validateObjectId("id"), checkCapsulePermission("cont
   }
 })
 
-// @route   GET /api/capsules/explore/public
-// @desc    Get public capsules for discovery
-// @access  Private
+/**
+ * @swagger
+ * /api/capsules/explore/public:
+ *   get:
+ *     summary: Get public capsules for discovery
+ *     description: Retrieve public capsules that allow public discovery
+ *     tags: [Capsules]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 12
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for capsule title, description, or tags
+ *     responses:
+ *       200:
+ *         description: Public capsules retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     capsules:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/Capsule'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 12
+ *                         total:
+ *                           type: integer
+ *                           example: 45
+ *                         pages:
+ *                           type: integer
+ *                           example: 4
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get("/explore/public", validatePagination, async (req, res) => {
   try {
     const page = Number.parseInt(req.query.page) || 1

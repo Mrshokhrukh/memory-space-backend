@@ -11,9 +11,103 @@ const {
 
 const router = express.Router()
 
-// @route   GET /api/memories/capsule/:capsuleId
-// @desc    Get memories for a capsule
-// @access  Private
+/**
+ * @swagger
+ * /api/memories/capsule/{capsuleId}:
+ *   get:
+ *     summary: Get memories for a capsule
+ *     description: Retrieve all memories for a specific capsule
+ *     tags: [Memories]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: capsuleId
+ *         required: true
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9a-fA-F]{24}$'
+ *         description: Capsule ID
+ *         example: "507f1f77bcf86cd799439012"
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 50
+ *           default: 20
+ *         description: Number of items per page
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [text, image, video, audio]
+ *         description: Filter memories by type
+ *     responses:
+ *       200:
+ *         description: Memories retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     memories:
+ *                       type: array
+ *                       items:
+ *                         $ref: '#/components/schemas/MemoryItem'
+ *                     pagination:
+ *                       type: object
+ *                       properties:
+ *                         page:
+ *                           type: integer
+ *                           example: 1
+ *                         limit:
+ *                           type: integer
+ *                           example: 20
+ *                         total:
+ *                           type: integer
+ *                           example: 45
+ *                         pages:
+ *                           type: integer
+ *                           example: 3
+ *       400:
+ *         description: Bad request - invalid capsule ID
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - no access to capsule
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.get(
   "/capsule/:capsuleId",
   validateObjectId("capsuleId"),
@@ -61,9 +155,138 @@ router.get(
   },
 )
 
-// @route   POST /api/memories
-// @desc    Create a new memory
-// @access  Private
+/**
+ * @swagger
+ * /api/memories:
+ *   post:
+ *     summary: Create a new memory
+ *     description: Create a new memory item in a capsule
+ *     tags: [Memories]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - capsuleId
+ *               - type
+ *             properties:
+ *               capsuleId:
+ *                 type: string
+ *                 pattern: '^[0-9a-fA-F]{24}$'
+ *                 description: ID of the capsule to add memory to
+ *                 example: "507f1f77bcf86cd799439012"
+ *               type:
+ *                 type: string
+ *                 enum: [text, image, video, audio]
+ *                 description: Type of memory
+ *                 example: "image"
+ *               title:
+ *                 type: string
+ *                 description: Memory title
+ *                 example: "Beach Day"
+ *               text:
+ *                 type: string
+ *                 description: Memory text content
+ *                 example: "Amazing day at the beach!"
+ *               mediaUrl:
+ *                 type: string
+ *                 description: URL to media file
+ *                 example: "https://res.cloudinary.com/example/image/upload/v123/beach.jpg"
+ *               thumbnailUrl:
+ *                 type: string
+ *                 description: URL to thumbnail image
+ *                 example: "https://res.cloudinary.com/example/image/upload/v123/beach_thumb.jpg"
+ *               mediaMetadata:
+ *                 type: object
+ *                 description: Metadata about the media file
+ *                 properties:
+ *                   size:
+ *                     type: number
+ *                     example: 1024000
+ *                   format:
+ *                     type: string
+ *                     example: "jpg"
+ *                   dimensions:
+ *                     type: object
+ *                     properties:
+ *                       width:
+ *                         type: number
+ *                         example: 1920
+ *                       height:
+ *                         type: number
+ *                         example: 1080
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Memory tags
+ *                 example: ["beach", "summer", "family"]
+ *               location:
+ *                 type: object
+ *                 description: Location information
+ *                 properties:
+ *                   name:
+ *                     type: string
+ *                     example: "Miami Beach"
+ *                   coordinates:
+ *                     type: array
+ *                     items:
+ *                       type: number
+ *                     example: [-80.1918, 25.7617]
+ *     responses:
+ *       201:
+ *         description: Memory created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: "Memory created successfully"
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     memory:
+ *                       $ref: '#/components/schemas/MemoryItem'
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Unauthorized - invalid or missing token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       403:
+ *         description: Forbidden - not a capsule member
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       404:
+ *         description: Capsule not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
 router.post("/", validateMemoryCreation, async (req, res) => {
   try {
     const { capsuleId, type, title, text, mediaUrl, thumbnailUrl, mediaMetadata, tags, location } = req.body
