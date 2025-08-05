@@ -32,7 +32,7 @@ const io = new Server(server, {
     origin: [
       process.env.CLIENT_URL || 'http://localhost:3000',
       'https://memory-client-neon.vercel.app',
-      'http://localhost:80'
+      'http://localhost:80',
     ],
     methods: ['GET', 'POST'],
   },
@@ -60,11 +60,11 @@ app.use(
       process.env.CLIENT_URL || 'http://localhost:3000',
       'https://memory-client-neon.vercel.app',
       'https://memoryscape.vercel.app',
-      'http://localhost:80'
+      'http://localhost:80',
     ],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization']
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -100,7 +100,7 @@ app.get('/', (req, res) => {
   res.json({
     message: 'Memoryscape API is running',
     version: '1.0.0',
-    environment: process.env.NODE_ENV || 'development'
+    environment: process.env.NODE_ENV || 'development',
   });
 });
 
