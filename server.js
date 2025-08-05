@@ -59,9 +59,12 @@ app.use(
     origin: [
       process.env.CLIENT_URL || 'http://localhost:3000',
       'https://memory-client-neon.vercel.app',
+      'https://memoryscape.vercel.app',
       'http://localhost:80'
     ],
     credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization']
   })
 );
 
@@ -91,6 +94,15 @@ app.use(
     },
   })
 );
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({
+    message: 'Memoryscape API is running',
+    version: '1.0.0',
+    environment: process.env.NODE_ENV || 'development'
+  });
+});
 
 // Routes
 app.use('/api/auth', authRoutes);
@@ -141,19 +153,11 @@ app.use(errorHandler);
 // Socket.io connection handling
 socketHandler(io);
 
-// Database connection - > mongodb://localhost:27017/memoryscape
-mongoose
-  .connect(process.env.MONGODB_URI || 'null', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-  })
-  .then(() => {
-    console.log('✅ Connected to MongoDB');
-  })
-  .catch((error) => {
-    console.error('❌ MongoDB connection error:', error);
-    process.exit(1);
-  });
+// Import database connection
+const connectDB = require('./config/database');
+
+// Database connection
+connectDB();
 
 // Graceful shutdown
 process.on('SIGTERM', () => {

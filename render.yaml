@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: memoryscape-api
+    name: memory-space-backend
     env: node
     plan: starter
     buildCommand: npm install
@@ -9,7 +9,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: PORT
-        value: 5000
+        value: 10000
       - key: MONGODB_URI
         fromDatabase:
           name: memoryscape-db
@@ -31,7 +31,7 @@ services:
       - key: OPENAI_API_KEY
         sync: false
       - key: CLIENT_URL
-        value: https://memoryscape.vercel.app
+        value: https://memory-client-neon.vercel.app
 
 databases:
   - name: memoryscape-db
