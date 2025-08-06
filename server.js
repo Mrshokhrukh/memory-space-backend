@@ -26,54 +26,51 @@ const socketHandler = require('./socket/socketHandler');
 const app = express();
 const server = createServer(app);
 
-// Socket.io setup
+// === 🔐 CORS configuration ===
+const corsOptions = {
+  origin: 'https://memory-client-neon.vercel.app',
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
+
+app.use(cors(corsOptions)); // Apply CORS middleware
+app.options('*', cors(corsOptions)); // Handle preflight requests globally
+
+// === ⚡ Socket.io setup ===
 const io = new Server(server, {
   cors: {
-    origin: [
-      process.env.CLIENT_URL || 'http://localhost:3000',
-      'https://memory-client-neon.vercel.app',
-      'http://localhost:80',
-    ],
+    origin: 'https://memory-client-neon.vercel.app',
     methods: ['GET', 'POST'],
   },
 });
 
-// Security middleware
+// === 🔐 Security middleware ===
 app.use(
   helmet({
     crossOriginResourcePolicy: { policy: 'cross-origin' },
   })
 );
 
-// Rate limiting
+// === 🚨 Rate limiting ===
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // limit each IP to 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
   message: 'Too many requests from this IP, please try again later.',
 });
 app.use('/api/', limiter);
 
-// CORS configuration
-app.use(
-  cors({
-    origin: 'https://memory-client-neon.vercel.app',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
-
-// Body parsing middleware
+// === 🧠 Body parsing ===
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 
-// Make io accessible to routes
+// === 🔗 Attach socket.io to requests ===
 app.use((req, res, next) => {
   req.io = io;
   next();
 });
 
-// Swagger UI
+// === 📘 Swagger UI ===
 app.use(
   '/api-docs',
   swaggerUi.serve,
@@ -90,7 +87,7 @@ app.use(
   })
 );
 
-// Root endpoint
+// === 🏠 Root endpoint ===
 app.get('/', (req, res) => {
   res.json({
     message: 'Memoryscape API is running',
@@ -99,7 +96,7 @@ app.get('/', (req, res) => {
   });
 });
 
-// Routes
+// === 📦 Routes ===
 app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/capsules', authenticateToken, capsuleRoutes);
@@ -130,10 +127,8 @@ app.use('/api/upload', authenticateToken, uploadRoutes);
  *                   example: "2024-01-01T12:00:00.000Z"
  *                 uptime:
  *                   type: number
- *                   description: Server uptime in seconds
  *                   example: 3600
  */
-// Health check endpoint
 app.get('/api/health', (req, res) => {
   res.status(200).json({
     status: 'OK',
@@ -142,19 +137,17 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// Error handling middleware
+// === ❌ Error handling middleware ===
 app.use(errorHandler);
 
-// Socket.io connection handling
+// === 🔌 Socket.io connection handling ===
 socketHandler(io);
 
-// Import database connection
+// === 🌐 Database connection ===
 const connectDB = require('./config/database');
-
-// Database connection
 connectDB();
 
-// Graceful shutdown
+// === 🧼 Graceful shutdown ===
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
   server.close(() => {
@@ -163,8 +156,8 @@ process.on('SIGTERM', () => {
   });
 });
 
+// === 🚀 Start the server ===
 const PORT = process.env.PORT || 8800;
-
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(
