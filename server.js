@@ -56,12 +56,7 @@ app.use('/api/', limiter);
 // CORS configuration
 app.use(
   cors({
-    origin: [
-      process.env.CLIENT_URL || 'http://localhost:3000',
-      'https://memory-client-neon.vercel.app',
-      'https://memoryscape.vercel.app',
-      'http://localhost:80',
-    ],
+    origin: 'https://memory-client-neon.vercel.app',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization'],
