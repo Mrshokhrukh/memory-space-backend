@@ -28,7 +28,7 @@ const server = createServer(app);
 
 // === 🔐 CORS configuration ===
 const corsOptions = {
-  origin: 'https://memoryscape-frontend.vercel.app/',
+  origin: 'https://memoryscape-frontend.vercel.app',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -40,7 +40,7 @@ app.options('*', cors(corsOptions)); // Handle preflight requests globally
 // === ⚡ Socket.io setup ===
 const io = new Server(server, {
   cors: {
-    origin: 'https://memoryscape-frontend.vercel.app/',
+    origin: 'https://memoryscape-frontend.vercel.app',
     methods: ['GET', 'POST'],
   },
 });
@@ -161,7 +161,7 @@ const PORT = process.env.PORT || 8800;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(
-    `📱 Client URL: ${process.env.CLIENT_URL || 'http://localhost:3000'}`
+    `📱 Client URL: ${process.env.CLIENT_URL || 'https://memoryscape-frontend.vercel.app'}`
   );
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
