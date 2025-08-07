@@ -28,7 +28,7 @@ const server = createServer(app);
 
 // === 🔐 CORS configuration ===
 const corsOptions = {
-  origin: 'https://memory-client-neon.vercel.app',
+  origin: 'https://memoryscape-frontend.vercel.app/',
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
@@ -40,7 +40,7 @@ app.options('*', cors(corsOptions)); // Handle preflight requests globally
 // === ⚡ Socket.io setup ===
 const io = new Server(server, {
   cors: {
-    origin: 'https://memory-client-neon.vercel.app',
+    origin: 'https://memoryscape-frontend.vercel.app/',
     methods: ['GET', 'POST'],
   },
 });
