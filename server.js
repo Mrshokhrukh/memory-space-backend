@@ -27,13 +27,20 @@ const app = express();
 const server = createServer(app);
 
 // === 🔐 CORS configuration ===
+const allowedOrigins = ['https://memoryscape-frontend.vercel.app'];
+
 const corsOptions = {
-  origin: 'https://memoryscape-frontend.vercel.app',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin.replace(/\/$/, ''))) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 };
-
 app.use(cors(corsOptions)); // Apply CORS middleware
 app.options('*', cors(corsOptions)); // Handle preflight requests globally
 
@@ -161,7 +168,9 @@ const PORT = process.env.PORT || 8800;
 server.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(
-    `📱 Client URL: ${process.env.CLIENT_URL || 'https://memoryscape-frontend.vercel.app'}`
+    `📱 Client URL: ${
+      process.env.CLIENT_URL || 'https://memoryscape-frontend.vercel.app'
+    }`
   );
   console.log(`🌍 Environment: ${process.env.NODE_ENV || 'development'}`);
 });
